@@ -104,9 +104,7 @@ AutoBackendOnnx::AutoBackendOnnx(const char *modelPath, const char *logid, const
     if (!imgsz_.empty())
     {
         // Initialize cvSize_ using getHeight() and getWidth()
-        // cvSize_ = cv::MatSize()
         cvSize_ = cv::Size(getWidth(), getHeight());
-        // cvMatSize_ = cv::MatSize(cvSize_.width, cvSize_.height);
     }
 
     // task init:
@@ -226,22 +224,37 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(const fs::path &imagePath
     return predict_once(image, conf, iou, mask_threshold, conversionCode);
 }
 
+/**
+ * @brief Runs object detection on an input image.
+ *
+ * This method performs object detection on the input image and returns the detected objects as YoloResults.
+ *
+ * @param image The input image to run object detection on.
+ * @param conf The confidence threshold for object detection.
+ * @param iou The intersection-over-union (IoU) threshold for non-maximum suppression.
+ * @param mask_threshold The threshold for the semantic segmentation mask.
+ * @param conversionCode An optional conversion code for image format conversion (e.g., cv::COLOR_BGR2RGB).
+ *                      Default value is -1, indicating no conversion.
+ *                      TODO: use some constant from some namespace rather than hardcoded values here
+ *
+ * @return A vector of YoloResults representing the detected objects.
+ */
 std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode)
 {
     // 1. preprocess
     float *blob = nullptr;
-    // double* blob = nullptr;
+
     std::vector<Ort::Value> inputTensors;
     if (conversionCode >= 0)
     {
         cv::cvtColor(image, image, conversionCode);
     }
     std::vector<int64_t> inputTensorShape;
-    // TODO: for classify task preprocessed image will be different (!):
     cv::Mat preprocessed_img;
     cv::Size new_shape = cv::Size(getWidth(), getHeight());
     const bool &scaleFill = false;
     const bool &auto_ = false;
+
     letterbox(image, preprocessed_img, new_shape, cv::Scalar(), auto_, scaleFill, true, getStride());
     fill_blob(preprocessed_img, blob, inputTensorShape);
     int64_t inputTensorSize = vector_product(inputTensorShape);
@@ -259,15 +272,17 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
 
     // create container for the results
     std::vector<YoloResults> results;
-    // 3. postprocess based on task:
+
+    // 3. postprocess:
     std::unordered_map<int, std::string> names = this->getNames();
     int class_names_num = names.size();
+
     if (task_ == YoloTasks::SEGMENT)
     {
-
         // get outputs info
         std::vector<int64_t> outputTensor0Shape = outputTensors[0].GetTensorTypeAndShapeInfo().GetShape();
         std::vector<int64_t> outputTensor1Shape = outputTensors[1].GetTensorTypeAndShapeInfo().GetShape();
+
         // get outputs
         float *all_data0 = outputTensors[0].GetTensorMutableData<float>();
 
@@ -282,6 +297,7 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
         int mh = outputTensor1Shape[2];
         int mw = outputTensor1Shape[3];
         ImageInfo img_info = {image.size()};
+
         postprocess_masks(output0, output1, img_info, results, class_names_num, conf, iou,
                           iw, ih, mw, mh, mask_features_num, mask_threshold);
     }
@@ -302,16 +318,19 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat &output0, cv::Mat &output1, Imag
     std::vector<float> confidences;
     std::vector<cv::Rect> boxes;
     std::vector<std::vector<float>> masks;
+
     // 4 - your default number of rect parameters {x, y, w, h}
     int data_width = class_names_num + 4 + masks_features_num;
     int rows = output0.rows;
     float *pdata = (float *)output0.data;
+
     for (int r = 0; r < rows; ++r)
     {
         cv::Mat scores(1, class_names_num, CV_32FC1, pdata + 4);
         cv::Point class_id;
         double max_conf;
         minMaxLoc(scores, 0, &max_conf, 0, &class_id);
+
         if (max_conf > conf_threshold)
         {
             masks.push_back(std::vector<float>(pdata + 4 + class_names_num, pdata + data_width));
@@ -322,17 +341,16 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat &output0, cv::Mat &output1, Imag
             float out_h = pdata[3];
             float out_left = MAX((pdata[0] - 0.5 * out_w + 0.5), 0);
             float out_top = MAX((pdata[1] - 0.5 * out_h + 0.5), 0);
+
             cv::Rect_<float> bbox = cv::Rect(out_left, out_top, (out_w + 0.5), (out_h + 0.5));
             cv::Rect_<float> scaled_bbox = scale_boxes(getCvSize(), bbox, image_info.raw_size);
+
             boxes.push_back(scaled_bbox);
         }
+
         pdata += data_width; // next pred
     }
 
-    //
-    // float masks_threshold = 0.50;
-    // int top_k = 500;
-    // const float& nmsde_eta = 1.0f;
     std::vector<int> nms_result;
     cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, iou_threshold, nms_result); // , nms_eta, top_k);
 
@@ -350,6 +368,7 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat &output0, cv::Mat &output1, Imag
         YoloResults result = {class_ids[idx], confidences[idx], boxes[idx]};
         _get_mask2(cv::Mat(masks[idx]).t(), proto, image_info, boxes[idx], result.mask, mask_threshold,
                    iw, ih, mw, mh, masks_features_num);
+
         output.push_back(result);
     }
 }
@@ -377,30 +396,36 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat &masks_features,
 
     cv::Mat matmul_res = (masks_features * proto).t();
     matmul_res = matmul_res.reshape(1, {downsampled_size.height, downsampled_size.width});
+
     // apply sigmoid to the mask:
     cv::Mat sigmoid_mask;
     exp(-matmul_res, sigmoid_mask);
     sigmoid_mask = 1.0 / (1.0 + sigmoid_mask);
+
     cv::Mat resized_mask;
     cv::Rect_<float> input_bbox = scale_boxes(img0_shape, bound_float, img1_shape);
     cv::resize(sigmoid_mask, resized_mask, img1_shape, 0, 0, cv::INTER_LANCZOS4);
+
     cv::Mat pre_out_mask = resized_mask(input_bbox);
     cv::Mat scaled_mask;
     scaleImage(scaled_mask, resized_mask, img0_shape);
     cv::resize(scaled_mask, mask_out, img0_shape);
+
     mask_out = mask_out(bound) > mask_thresh;
 }
 
 void AutoBackendOnnx::fill_blob(cv::Mat &image, float *&blob, std::vector<int64_t> &inputTensorShape)
 {
-
     cv::Mat floatImage;
+
     if (inputTensorShape.empty())
     {
         inputTensorShape = getInputTensorShape();
     }
+
     int inputChannelsNum = inputTensorShape[1];
     int rtype = CV_32FC3;
+
     image.convertTo(floatImage, rtype, 1.0f / 255.0);
     blob = new float[floatImage.cols * floatImage.rows * floatImage.channels()];
     cv::Size floatImageSize{floatImage.cols, floatImage.rows};
@@ -411,5 +436,6 @@ void AutoBackendOnnx::fill_blob(cv::Mat &image, float *&blob, std::vector<int64_
     {
         chw[i] = cv::Mat(floatImageSize, CV_32FC1, blob + i * floatImageSize.width * floatImageSize.height);
     }
+
     cv::split(floatImage, chw);
 }

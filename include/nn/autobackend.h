@@ -48,21 +48,7 @@ public:
     virtual const int &getHeight();
     virtual const cv::Size &getCvSize();
     virtual const std::string &getTask();
-    /**
-     * @brief Runs object detection on an input image.
-     *
-     * This method performs object detection on the input image and returns the detected objects as YoloResults.
-     *
-     * @param image The input image to run object detection on.
-     * @param conf The confidence threshold for object detection.
-     * @param iou The intersection-over-union (IoU) threshold for non-maximum suppression.
-     * @param mask_threshold The threshold for the semantic segmentation mask.
-     * @param conversionCode An optional conversion code for image format conversion (e.g., cv::COLOR_BGR2RGB).
-     *                      Default value is -1, indicating no conversion.
-     *                      TODO: use some constant from some namespace rather than hardcoded values here
-     *
-     * @return A vector of YoloResults representing the detected objects.
-     */
+
     virtual std::vector<YoloResults> predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
     virtual std::vector<YoloResults> predict_once(const std::filesystem::path &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
     virtual std::vector<YoloResults> predict_once(const std::string &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
@@ -78,7 +64,7 @@ public:
 protected:
     std::vector<int> imgsz_;
     int stride_ = OnnxInitializers::UNINITIALIZED_STRIDE;
-    int nc_ = OnnxInitializers::UNINITIALIZED_NC; //
+    int nc_ = OnnxInitializers::UNINITIALIZED_NC;
     int ch_ = 3;
     std::unordered_map<int, std::string> names_;
     std::vector<int64_t> inputTensorShape_;
