@@ -90,7 +90,7 @@ void plot_results(cv::Mat img, std::vector<YoloResults> &results,
 int main()
 {
     std::string img_path = "./images/cars.jpg";
-    const std::string &modelPath = "./checkpoints/yolov8s-seg.onnx";
+    const std::string &modelPath = "./checkpoints/yolov8m-seg.onnx";
 
     fs::path imageFilePath(img_path);
     fs::path newFilePath = imageFilePath.stem();
