@@ -1,9 +1,7 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(YOLOv8CPP)
+cmake_minimum_required(VERSION 3.22.1)
+project(YOLOv8Seg)
 
 set(ONNXRUNTIME_DIR ${CMAKE_SOURCE_DIR}/onnxruntime) # onnxruntime root
-
-message("The root onnxruntime directory is: ${ONNXRUNTIME_DIR}")
 
 find_package(OpenCV REQUIRED)
 
@@ -14,15 +12,16 @@ include_directories(include) # Include your header files directory
 file(GLOB_RECURSE CURR_SOURCES src/*.cpp)
 
 # Create the executable
-add_executable(YOLOv8CPP ${CURR_SOURCES})
+add_executable(${PROJECT_NAME} ${CURR_SOURCES})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_include_directories(YOLOv8CPP PRIVATE "${ONNXRUNTIME_DIR}/include")
+target_include_directories(${PROJECT_NAME} PRIVATE "${ONNXRUNTIME_DIR}/include")
 
-target_compile_features(YOLOv8CPP PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
-target_link_libraries(YOLOv8CPP ${OpenCV_LIBS})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 
-target_link_libraries(YOLOv8CPP "${ONNXRUNTIME_DIR}/lib/libonnxruntime.so")
+target_link_libraries(${PROJECT_NAME}
+                      "${ONNXRUNTIME_DIR}/lib/libonnxruntime.so")
