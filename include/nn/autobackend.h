@@ -63,19 +63,15 @@ public:
      *
      * @return A vector of YoloResults representing the detected objects.
      */
-    virtual std::vector<YoloResults> predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode = -1, bool verbose = true);
-    virtual std::vector<YoloResults> predict_once(const std::filesystem::path &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1, bool verbose = true);
-    virtual std::vector<YoloResults> predict_once(const std::string &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1, bool verbose = true);
+    virtual std::vector<YoloResults> predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
+    virtual std::vector<YoloResults> predict_once(const std::filesystem::path &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
+    virtual std::vector<YoloResults> predict_once(const std::string &imagePath, float &conf, float &iou, float &mask_threshold, int conversionCode = -1);
 
     virtual void fill_blob(cv::Mat &image, float *&blob, std::vector<int64_t> &inputTensorShape);
     virtual void postprocess_masks(cv::Mat &output0, cv::Mat &output1, ImageInfo para, std::vector<YoloResults> &output,
                                    int &class_names_num, float &conf_threshold, float &iou_threshold,
                                    int &iw, int &ih, int &mw, int &mh, int &masks_features_num, float mask_threshold = 0.50f);
 
-    virtual void postprocess_detects(cv::Mat &output0, ImageInfo image_info, std::vector<YoloResults> &output,
-                                     int &class_names_num, float &conf_threshold, float &iou_threshold);
-    virtual void postprocess_kpts(cv::Mat &output0, ImageInfo &image_info, std::vector<YoloResults> &output,
-                                  int &class_names_num, float &conf_threshold, float &iou_threshold);
     static void _get_mask2(const cv::Mat &mask_info, const cv::Mat &mask_data, const ImageInfo &image_info, cv::Rect bound, cv::Mat &mask_out,
                            float &mask_thresh, int &iw, int &ih, int &mw, int &mh, int &masks_features_num, bool round_downsampled = false);
 
@@ -88,5 +84,4 @@ protected:
     std::vector<int64_t> inputTensorShape_;
     cv::Size cvSize_;
     std::string task_;
-    // cv::MatSize cvMatSize_;
 };

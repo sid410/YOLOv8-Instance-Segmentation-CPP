@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 
-namespace MetadataConstants {
+namespace MetadataConstants
+{
     inline const std::string IMGSZ = "imgsz";
     inline const std::string STRIDE = "stride";
     inline const std::string NC = "nc";
@@ -13,7 +14,8 @@ namespace MetadataConstants {
     inline const std::string NAMES = "names";
 }
 
-namespace OnnxProviders {
+namespace OnnxProviders
+{
     inline const std::string CPU = "cpu";
     inline const std::string CUDA = "cuda";
 }
@@ -23,7 +25,6 @@ namespace OnnxInitializers
     inline const int UNINITIALIZED_STRIDE = -1;
     inline const int UNINITIALIZED_NC = -1;
 }
-
 
 namespace YoloTasks
 {

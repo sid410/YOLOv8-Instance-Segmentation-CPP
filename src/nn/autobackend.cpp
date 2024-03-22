@@ -180,7 +180,7 @@ const std::string &AutoBackendOnnx::getTask()
 }
 
 std::vector<YoloResults> AutoBackendOnnx::predict_once(const std::string &imagePath, float &conf, float &iou, float &mask_threshold,
-                                                       int conversionCode, bool verbose)
+                                                       int conversionCode)
 {
     // Convert the string imagePath to an object of type std::filesystem::path
     fs::path imageFilePath(imagePath);
@@ -189,7 +189,7 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(const std::string &imageP
 }
 
 std::vector<YoloResults> AutoBackendOnnx::predict_once(const fs::path &imagePath, float &conf, float &iou, float &mask_threshold,
-                                                       int conversionCode, bool verbose)
+                                                       int conversionCode)
 {
     // Check if the specified path exists
     if (!fs::exists(imagePath))
@@ -226,7 +226,7 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(const fs::path &imagePath
     return predict_once(image, conf, iou, mask_threshold, conversionCode);
 }
 
-std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode, bool verbose)
+std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode)
 {
     // 1. preprocess
     float *blob = nullptr;
@@ -284,22 +284,6 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
         ImageInfo img_info = {image.size()};
         postprocess_masks(output0, output1, img_info, results, class_names_num, conf, iou,
                           iw, ih, mw, mh, mask_features_num, mask_threshold);
-    }
-    else if (task_ == YoloTasks::DETECT)
-    {
-        ImageInfo img_info = {image.size()};
-        std::vector<int64_t> outputTensor0Shape = outputTensors[0].GetTensorTypeAndShapeInfo().GetShape();
-        float *all_data0 = outputTensors[0].GetTensorMutableData<float>();
-        cv::Mat output0 = cv::Mat(cv::Size((int)outputTensor0Shape[2], (int)outputTensor0Shape[1]), CV_32F, all_data0).t(); // [bs, features, preds_num]=>[bs, preds_num, features]
-        postprocess_detects(output0, img_info, results, class_names_num, conf, iou);
-    }
-    else if (task_ == YoloTasks::POSE)
-    {
-        ImageInfo image_info = {image.size()};
-        std::vector<int64_t> outputTensor0Shape = outputTensors[0].GetTensorTypeAndShapeInfo().GetShape();
-        float *all_data0 = outputTensors[0].GetTensorMutableData<float>();
-        cv::Mat output0 = cv::Mat(cv::Size((int)outputTensor0Shape[2], (int)outputTensor0Shape[1]), CV_32F, all_data0).t(); // [bs, features, preds_num]=>[bs, preds_num, features]
-        postprocess_kpts(output0, image_info, results, class_names_num, conf, iou);
     }
     else
     {
@@ -367,91 +351,6 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat &output0, cv::Mat &output1, Imag
         _get_mask2(cv::Mat(masks[idx]).t(), proto, image_info, boxes[idx], result.mask, mask_threshold,
                    iw, ih, mw, mh, masks_features_num);
         output.push_back(result);
-    }
-}
-
-void AutoBackendOnnx::postprocess_detects(cv::Mat &output0, ImageInfo image_info, std::vector<YoloResults> &output,
-                                          int &class_names_num, float &conf_threshold, float &iou_threshold)
-{
-    output.clear();
-    std::vector<int> class_ids;
-    std::vector<float> confidences;
-    std::vector<cv::Rect> boxes;
-    std::vector<std::vector<float>> masks;
-    // 4 - your default number of rect parameters {x, y, w, h}
-    int data_width = class_names_num + 4;
-    int rows = output0.rows;
-    float *pdata = (float *)output0.data;
-
-    for (int r = 0; r < rows; ++r)
-    {
-        cv::Mat scores(1, class_names_num, CV_32FC1, pdata + 4);
-        cv::Point class_id;
-        double max_conf;
-        minMaxLoc(scores, nullptr, &max_conf, nullptr, &class_id);
-
-        if (max_conf > conf_threshold)
-        {
-            masks.emplace_back(pdata + 4 + class_names_num, pdata + data_width);
-            class_ids.push_back(class_id.x);
-            confidences.push_back((float)max_conf);
-
-            float out_w = pdata[2];
-            float out_h = pdata[3];
-            float out_left = MAX((pdata[0] - 0.5 * out_w + 0.5), 0);
-            float out_top = MAX((pdata[1] - 0.5 * out_h + 0.5), 0);
-
-            cv::Rect_<float> bbox = cv::Rect_<float>(out_left, out_top, (out_w + 0.5), (out_h + 0.5));
-            cv::Rect_<float> scaled_bbox = scale_boxes(getCvSize(), bbox, image_info.raw_size);
-
-            boxes.push_back(scaled_bbox);
-        }
-        pdata += data_width; // next pred
-    }
-
-    std::vector<int> nms_result;
-    cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, iou_threshold, nms_result); // , nms_eta, top_k);
-    for (int idx : nms_result)
-    {
-        boxes[idx] = boxes[idx] & cv::Rect(0, 0, image_info.raw_size.width, image_info.raw_size.height);
-        YoloResults result = {class_ids[idx], confidences[idx], boxes[idx]};
-        output.push_back(result);
-    }
-}
-
-void AutoBackendOnnx::postprocess_kpts(cv::Mat &output0, ImageInfo &image_info, std::vector<YoloResults> &output,
-                                       int &class_names_num, float &conf_threshold, float &iou_threshold)
-{
-    std::vector<cv::Rect> boxes;
-    std::vector<float> confidences;
-    std::vector<int> class_ids;
-    std::vector<std::vector<float>> rest;
-    std::tie(boxes, confidences, class_ids, rest) = non_max_suppression(output0, class_names_num, output0.cols, conf_threshold, iou_threshold);
-    cv::Size img1_shape = getCvSize();
-    auto bound_bbox = cv::Rect_<float>(0, 0, image_info.raw_size.width, image_info.raw_size.height);
-    for (int i = 0; i < boxes.size(); i++)
-    {
-        //             pred[:, :4] = ops.scale_boxes(img.shape[2:], pred[:, :4], shape).round()
-        //            pred_kpts = pred[:, 6:].view(len(pred), *self.model.kpt_shape) if len(pred) else pred[:, 6:]
-        //            pred_kpts = ops.scale_coords(img.shape[2:], pred_kpts, shape)
-        //            path = self.batch[0]
-        //            img_path = path[i] if isinstance(path, list) else path
-        //            results.append(
-        //                Results(orig_img=orig_img,
-        //                        path=img_path,
-        //                        names=self.model.names,
-        //                        boxes=pred[:, :6],
-        //                        keypoints=pred_kpts))
-        cv::Rect_<float> bbox = boxes[i];
-        auto scaled_bbox = scale_boxes(img1_shape, bbox, image_info.raw_size);
-        scaled_bbox = scaled_bbox & bound_bbox;
-        //        cv::Mat kpt = cv::Mat(rest[i]).t();
-        //        scale_coords(img1_shape, kpt, image_info.raw_size);
-        // TODO: overload scale_coords so that will accept cv::Mat of shape [17, 3]
-        //      so that it will be more similar to what we have in python
-        std::vector<float> kpt = scale_coords(img1_shape, rest[i], image_info.raw_size);
-        YoloResults tmp_res = {class_ids[i], confidences[i], scaled_bbox, {}, kpt};
-        output.push_back(tmp_res);
     }
 }
 
