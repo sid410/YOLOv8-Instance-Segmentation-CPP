@@ -1,0 +1,16 @@
+# ide related
+.vs/
+.vscode/
+.idea/*
+# build
+build/*
+x64/*
+cmake-build-debug/*
+cmake-build-debug-visual-studio/*
+# dlls:
+*.dll
+# vs-like objects
+*.sln
+*vcxproj*
+packages.config
+packages/*
