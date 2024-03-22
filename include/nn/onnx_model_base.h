@@ -1,4 +1,6 @@
-#pragma once
+#ifndef ONNX_MODEL_BASE_H
+#define ONNX_MODEL_BASE_H
+
 #include <onnxruntime_cxx_api.h>
 #include <string>
 #include <unordered_map>
@@ -16,7 +18,7 @@ public:
     // OnnxModelBase();  // no default constructor should be there
     // virtual ~OnnxModelBase();
 
-    virtual const std::vector<std::string> &getInputNames(); // = 0
+    virtual const std::vector<std::string> &getInputNames();
     virtual const std::vector<std::string> &getOutputNames();
     virtual const std::vector<const char *> getOutputNamesCStr();
     virtual const std::vector<const char *> getInputNamesCStr();
@@ -39,3 +41,5 @@ protected:
     std::vector<const char *> outputNamesCStr;
     std::vector<const char *> inputNamesCStr;
 };
+
+#endif
