@@ -20,9 +20,7 @@
  * @param[in] logid Log identifier.
  * @param[in] provider Provider (e.g., "CPU" or "CUDA"). (NOTE: for now only CPU is supported)
  */
-
 OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const char *provider)
-    //: modelPath_(modelPath), env(std::move(env)), session(std::move(session))
     : modelPath_(modelPath)
 {
 
@@ -36,22 +34,20 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
     OrtCUDAProviderOptions cudaOption;
 
     if (provider == OnnxProviders::CUDA.c_str())
-    { // strcmp(provider, OnnxProviders::CUDA.c_str()) == true strcmp(provider, "cuda") // (providerStr == "cuda")
+    {
         if (cudaAvailable == availableProviders.end())
         {
             std::cout << "CUDA is not supported by your ONNXRuntime build. Fallback to CPU." << std::endl;
-            // std::cout << "Inference device: CPU" << std::endl;
         }
         else
         {
-            // std::cout << "Inference device: GPU" << std::endl;
             sessionOptions.AppendExecutionProvider_CUDA(cudaOption);
         }
     }
 
     else if (provider == OnnxProviders::CPU.c_str())
-    { // strcmp(provider, OnnxProviders::CPU.c_str()) == true) (providerStr == "cpu") {
-      // "cpu" by default
+    {
+        // "cpu" by default
     }
     else
     {
@@ -60,11 +56,7 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
 
     std::cout << "Inference device: " << std::string(provider) << std::endl;
     session = Ort::Session(env, modelPath, sessionOptions);
-    // auto modelPathW = get_win_path(modelPath);
-    // session = Ort::Session(env, modelPathW.c_str(), sessionOptions);
-    // session = Ort::Session(env)
-    //  https://github.com/microsoft/onnxruntime/issues/14157
-    // std::vector<const char *> inputNodeNames;
+
     //  ----------------
     //  init input names
     inputNodeNames;
@@ -77,6 +69,7 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
         inputNodeNameAllocatedStrings.push_back(std::move(input_name));
         inputNodeNames.push_back(inputNodeNameAllocatedStrings.back().get());
     }
+
     // -----------------
     // init output names
     outputNodeNames;
@@ -89,6 +82,7 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
         outputNodeNameAllocatedStrings.push_back(std::move(output_name));
         outputNodeNames.push_back(outputNodeNameAllocatedStrings.back().get());
     }
+
     // -------------------------
     // initialize model metadata
     model_metadata = session.GetModelMetadata();
@@ -171,8 +165,6 @@ const std::vector<const char *> OnnxModelBase::getInputNamesCStr()
 
 std::vector<Ort::Value> OnnxModelBase::forward(std::vector<Ort::Value> &inputTensors)
 {
-    // todo: make runOptions parameter here
-
     return session.Run(Ort::RunOptions{nullptr},
                        inputNamesCStr.data(),
                        inputTensors.data(),
@@ -180,7 +172,3 @@ std::vector<Ort::Value> OnnxModelBase::forward(std::vector<Ort::Value> &inputTen
                        outputNamesCStr.data(),
                        outputNamesCStr.size());
 }
-
-// OnnxModelBase::~OnnxModelBase() {
-//     // empty body
-// }
