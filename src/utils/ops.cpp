@@ -1,5 +1,4 @@
-#include <opencv2/opencv.hpp>
-#include <vector>
+#include "utils/ops.h"
 
 void clip_boxes(cv::Rect &box, const cv::Size &shape)
 {
@@ -34,10 +33,8 @@ void clip_boxes(std::vector<cv::Rect_<float>> &boxes, const cv::Size &shape)
 }
 
 // source: ultralytics/utils/ops.py scale_boxes lines 99+ (ultralytics==8.0.160)
-cv::Rect_<float> scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, const cv::Size &img0_shape,
-                             std::pair<float, cv::Point2f> ratio_pad = std::make_pair(-1.0f, cv::Point2f(-1.0f, -1.0f)), bool padding = true)
+cv::Rect_<float> scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, const cv::Size &img0_shape, std::pair<float, cv::Point2f> ratio_pad, bool padding)
 {
-
     float gain, pad_x, pad_y;
 
     if (ratio_pad.first < 0.0f)
@@ -54,7 +51,6 @@ cv::Rect_<float> scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, 
         pad_y = ratio_pad.second.y;
     }
 
-    // cv::Rect scaledCoords(box);
     cv::Rect_<float> scaledCoords(box);
 
     if (padding)
@@ -87,7 +83,6 @@ void clip_coords(std::vector<float> &coords, const cv::Size &shape)
 // source: ultralytics/utils/ops.py scale_coords lines 753+ (ultralytics==8.0.160)
 std::vector<float> scale_coords(const cv::Size &img1_shape, std::vector<float> &coords, const cv::Size &img0_shape)
 {
-    //    cv::Mat scaledCoords = coords.clone();
     std::vector<float> scaledCoords = coords;
 
     // Calculate gain and padding
@@ -95,8 +90,6 @@ std::vector<float> scale_coords(const cv::Size &img1_shape, std::vector<float> &
     cv::Point2d pad((img1_shape.width - img0_shape.width * gain) / 2, (img1_shape.height - img0_shape.height * gain) / 2);
 
     // Apply padding
-    //    scaledCoords.col(0) = (scaledCoords.col(0) - pad.x);
-    //    scaledCoords.col(1) = (scaledCoords.col(1) - pad.y);
     // Assuming coords are of shape [1, 17, 3]
     for (int i = 0; i < scaledCoords.size(); i += 3)
     {
@@ -105,8 +98,6 @@ std::vector<float> scale_coords(const cv::Size &img1_shape, std::vector<float> &
     }
 
     // Scale coordinates
-    //    scaledCoords.col(0) /= gain;
-    //    scaledCoords.col(1) /= gain;
     // Assuming coords are of shape [1, 17, 3]
     for (int i = 0; i < scaledCoords.size(); i += 3)
     {
@@ -151,13 +142,11 @@ non_max_suppression(const cv::Mat &output0, int class_names_num, int data_width,
 
     std::vector<int> class_ids;
     std::vector<float> confidences;
-    //    std::vector<cv::Rect_<float>> boxes;
     std::vector<cv::Rect> boxes;
     std::vector<std::vector<float>> rest;
 
     int rest_start_pos = class_names_num + 4;
     int rest_features = data_width - rest_start_pos;
-    //    int data_width = rest_start_pos + total_features_num;
 
     int rows = output0.rows;
     float *pdata = (float *)output0.data;
@@ -190,18 +179,14 @@ non_max_suppression(const cv::Mat &output0, int class_names_num, int data_width,
         pdata += data_width; // next prediction
     }
 
-    //
-    // float masks_threshold = 0.50;
-    // int top_k = 500;
-    // const float& nmsde_eta = 1.0f;
     std::vector<int> nms_result;
-    cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, iou_threshold, nms_result); // , nms_eta, top_k);
-                                                                                      //    cv::dnn::NMSBoxes(boxes, confidences, );
+    cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, iou_threshold, nms_result);
+
     std::vector<int> nms_class_ids;
     std::vector<float> nms_confidences;
-    //    std::vector<cv::Rect_<float>> boxes;
     std::vector<cv::Rect> nms_boxes;
     std::vector<std::vector<float>> nms_rest;
+
     for (int idx : nms_result)
     {
         nms_class_ids.push_back(class_ids[idx]);
@@ -209,5 +194,6 @@ non_max_suppression(const cv::Mat &output0, int class_names_num, int data_width,
         nms_boxes.push_back(boxes[idx]);
         nms_rest.push_back(rest[idx]);
     }
+
     return std::make_tuple(nms_boxes, nms_confidences, nms_class_ids, nms_rest);
 }
