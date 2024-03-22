@@ -1,9 +1,4 @@
-
 #include <opencv2/opencv.hpp>
-
-#include <opencv2/core/mat.hpp>
-#include <opencv2/core/types.hpp>
-#include <opencv2/core.hpp>
 #include <vector>
 
 void clip_boxes(cv::Rect &box, const cv::Size &shape)
