@@ -74,17 +74,6 @@ cv::Rect_<float> scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, 
     return scaledCoords;
 }
 
-// void clip_coords(cv::Mat& coords, const cv::Size& shape) {
-//     // Clip x-coordinates to the image width
-//     cv::Mat xCoords = coords.col(0);
-//     cv::Mat yCoords = coords.col(1);
-//
-//     for (int i = 0; i < coords.rows; ++i) {
-//         xCoords.at<float>(i) = std::max(std::min(xCoords.at<float>(i), static_cast<float>(shape.width - 1)), 0.0f);
-//         yCoords.at<float>(i) = std::max(std::min(yCoords.at<float>(i), static_cast<float>(shape.height - 1)), 0.0f);
-//     }
-// }
-
 void clip_coords(std::vector<float> &coords, const cv::Size &shape)
 {
     // Assuming coords are of shape [1, 17, 3]
@@ -96,8 +85,6 @@ void clip_coords(std::vector<float> &coords, const cv::Size &shape)
 }
 
 // source: ultralytics/utils/ops.py scale_coords lines 753+ (ultralytics==8.0.160)
-// cv::Mat scale_coords(const cv::Size& img1_shape, cv::Mat& coords, const cv::Size& img0_shape)
-// cv::Mat scale_coords(const cv::Size& img1_shape, std::vector<float> coords, const cv::Size& img0_shape)
 std::vector<float> scale_coords(const cv::Size &img1_shape, std::vector<float> &coords, const cv::Size &img0_shape)
 {
     //    cv::Mat scaledCoords = coords.clone();
@@ -157,7 +144,6 @@ cv::Mat crop_mask(const cv::Mat &mask, const cv::Rect &box)
     return cropped_mask;
 }
 
-// std::tuple<std::vector<cv::Rect_<float>>, std::vector<float>, std::vector<int>, std::vector<std::vector<float>>>
 std::tuple<std::vector<cv::Rect>, std::vector<float>, std::vector<int>, std::vector<std::vector<float>>>
 non_max_suppression(const cv::Mat &output0, int class_names_num, int data_width, double conf_threshold,
                     float iou_threshold)

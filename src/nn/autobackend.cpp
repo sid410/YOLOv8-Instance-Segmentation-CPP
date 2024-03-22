@@ -244,8 +244,8 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
     // TODO: for classify task preprocessed image will be different (!):
     cv::Mat preprocessed_img;
     cv::Size new_shape = cv::Size(getWidth(), getHeight());
-    const bool &scaleFill = false; // false
-    const bool &auto_ = false;     // true
+    const bool &scaleFill = false;
+    const bool &auto_ = false;
     letterbox(image, preprocessed_img, new_shape, cv::Scalar(), auto_, scaleFill, true, getStride());
     fill_blob(preprocessed_img, blob, inputTensorShape);
     int64_t inputTensorSize = vector_product(inputTensorShape);
@@ -505,7 +505,7 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat &masks_features,
     cv::resize(sigmoid_mask, resized_mask, img1_shape, 0, 0, cv::INTER_LANCZOS4);
     cv::Mat pre_out_mask = resized_mask(input_bbox);
     cv::Mat scaled_mask;
-    scale_image2(scaled_mask, resized_mask, img0_shape);
+    scaleImage(scaled_mask, resized_mask, img0_shape);
     cv::resize(scaled_mask, mask_out, img0_shape);
     mask_out = mask_out(bound) > mask_thresh;
 }
