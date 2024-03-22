@@ -228,10 +228,6 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(const fs::path &imagePath
 
 std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &conf, float &iou, float &mask_threshold, int conversionCode, bool verbose)
 {
-    double preprocess_time = 0.0;
-    double inference_time = 0.0;
-    double postprocess_time = 0.0;
-    Timer preprocess_timer = Timer(preprocess_time, verbose);
     // 1. preprocess
     float *blob = nullptr;
     // double* blob = nullptr;
@@ -257,12 +253,10 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
     inputTensors.push_back(Ort::Value::CreateTensor<float>(
         memoryInfo, inputTensorValues.data(), inputTensorSize,
         inputTensorShape.data(), inputTensorShape.size()));
-    preprocess_timer.Stop();
-    Timer inference_timer = Timer(inference_time, verbose);
+
     // 2. inference
     std::vector<Ort::Value> outputTensors = forward(inputTensors);
-    inference_timer.Stop();
-    Timer postprocess_timer = Timer(postprocess_time, verbose);
+
     // create container for the results
     std::vector<YoloResults> results;
     // 3. postprocess based on task:
@@ -310,18 +304,6 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
     else
     {
         throw std::runtime_error("NotImplementedError: task: " + task_);
-    }
-
-    postprocess_timer.Stop();
-    if (verbose)
-    {
-        std::cout << std::fixed << std::setprecision(1);
-        std::cout << "image: " << preprocessed_img.rows << "x" << preprocessed_img.cols << " " << results.size() << " objs, ";
-        std::cout << (preprocess_time + inference_time + postprocess_time) * 1000.0 << "ms" << std::endl;
-        std::cout << "Speed: " << (preprocess_time * 1000.0) << "ms preprocess, ";
-        std::cout << (inference_time * 1000.0) << "ms inference, ";
-        std::cout << (postprocess_time * 1000.0) << "ms postprocess per image ";
-        std::cout << "at shape (1, " << image.channels() << ", " << preprocessed_img.rows << ", " << preprocessed_img.cols << ")" << std::endl;
     }
 
     return results;

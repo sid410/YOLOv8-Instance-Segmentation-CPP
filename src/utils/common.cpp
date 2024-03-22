@@ -14,38 +14,6 @@
 #include <regex>
 #include <vector>
 
-Timer::Timer(double &accumulator, bool isEnabled)
-    : accumulator(accumulator), isEnabled(isEnabled)
-{
-    if (isEnabled)
-    {
-        start = std::chrono::high_resolution_clock::now();
-    }
-}
-
-// Stop the timer and update the accumulator
-void Timer::Stop()
-{
-    if (isEnabled)
-    {
-        auto end = std::chrono::high_resolution_clock::now();
-        double duration = std::chrono::duration<double>(end - start).count();
-        accumulator += duration;
-    }
-}
-
-// С++ 14 version
-// #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
-std::wstring get_win_path(const std::string &modelPath)
-{
-#ifdef _WIN32
-    return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(modelPath);
-#else
-    // return modelPath;
-    return std::wstring(modelPath.begin(), modelPath.end());
-#endif
-}
-
 std::vector<std::string> parseVectorString(const std::string &input)
 {
     /* Main purpose of this function is to parse `imgsz` key value of model metadata
