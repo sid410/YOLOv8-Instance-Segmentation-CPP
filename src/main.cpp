@@ -47,11 +47,39 @@ void plot_results(cv::Mat img, std::vector<YoloResults> &results,
 
     for (const auto &res : results)
     {
+        float left = res.bbox.x;
+        float top = res.bbox.y;
+
+        // Try to get the class name corresponding to the given class_idx
+        std::string class_name;
+        auto it = names.find(res.class_idx);
+        if (it != names.end())
+        {
+            class_name = it->second;
+        }
+        else
+        {
+            std::cerr << "Warning: class_idx not found in names for class_idx = " << res.class_idx << std::endl;
+            // Then convert it to a string anyway
+            class_name = std::to_string(res.class_idx);
+        }
+
         // Draw mask if available
         if (res.mask.rows && res.mask.cols > 0)
         {
             mask(res.bbox).setTo(color[res.class_idx], res.mask);
         }
+
+        // Create label
+        std::stringstream labelStream;
+        labelStream << class_name << " " << std::fixed << std::setprecision(2) << res.conf;
+        std::string label = labelStream.str();
+
+        cv::Size text_size = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.6, 2, nullptr);
+        cv::Rect rect_to_fill(left - 1, top - text_size.height - 5, text_size.width + 2, text_size.height + 5);
+        cv::Scalar text_color = cv::Scalar(255.0, 255.0, 255.0);
+        rectangle(img, rect_to_fill, color[res.class_idx], -1);
+        putText(img, label, cv::Point(left - 1.5, top - 2.5), cv::FONT_HERSHEY_SIMPLEX, 0.6, text_color, 2);
     }
 
     // Combine the image and mask
@@ -61,8 +89,8 @@ void plot_results(cv::Mat img, std::vector<YoloResults> &results,
 
 int main()
 {
-    std::string img_path = "./images/640_640.jpg";
-    const std::string &modelPath = "./checkpoints/yolov8n-seg.onnx";
+    std::string img_path = "./images/cars.jpg";
+    const std::string &modelPath = "./checkpoints/yolov8s-seg.onnx";
 
     fs::path imageFilePath(img_path);
     fs::path newFilePath = imageFilePath.stem();
