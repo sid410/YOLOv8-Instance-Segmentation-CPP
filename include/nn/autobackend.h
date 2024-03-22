@@ -1,4 +1,6 @@
-#pragma once
+#ifndef AUTOBACKEND_ONNX_H
+#define AUTOBACKEND_ONNX_H
+
 #include <filesystem>
 #include <vector>
 #include <unordered_map>
@@ -71,3 +73,5 @@ protected:
     cv::Size cvSize_;
     std::string task_;
 };
+
+#endif

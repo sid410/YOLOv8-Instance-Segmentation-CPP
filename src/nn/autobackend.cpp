@@ -1,15 +1,9 @@
 #include "nn/autobackend.h"
-
-#include <iostream>
-#include <ostream>
-#include <filesystem>
-
-#include <opencv2/opencv.hpp>
-
 #include "utils/augment.h"
-#include "constants.h"
 #include "utils/common.h"
 #include "utils/ops.h"
+#include <iostream>
+#include <ostream>
 
 namespace fs = std::filesystem;
 
@@ -125,56 +119,6 @@ AutoBackendOnnx::AutoBackendOnnx(const char *modelPath, const char *logid, const
     }
 
     // TODO: raise assert if imgsz_ and task_ were not initialized (since you don't know in that case which postprocessing to use)
-}
-
-const std::vector<int> &AutoBackendOnnx::getImgsz()
-{
-    return imgsz_;
-}
-
-const int &AutoBackendOnnx::getHeight()
-{
-    return imgsz_[0];
-}
-
-const int &AutoBackendOnnx::getWidth()
-{
-    return imgsz_[1];
-}
-
-const int &AutoBackendOnnx::getStride()
-{
-    return stride_;
-}
-
-const int &AutoBackendOnnx::getCh()
-{
-    return ch_;
-}
-
-const int &AutoBackendOnnx::getNc()
-{
-    return nc_;
-}
-
-const std::unordered_map<int, std::string> &AutoBackendOnnx::getNames()
-{
-    return names_;
-}
-
-const cv::Size &AutoBackendOnnx::getCvSize()
-{
-    return cvSize_;
-}
-
-const std::vector<int64_t> &AutoBackendOnnx::getInputTensorShape()
-{
-    return inputTensorShape_;
-}
-
-const std::string &AutoBackendOnnx::getTask()
-{
-    return task_;
 }
 
 std::vector<YoloResults> AutoBackendOnnx::predict_once(const std::string &imagePath, float &conf, float &iou, float &mask_threshold,
@@ -438,4 +382,54 @@ void AutoBackendOnnx::fill_blob(cv::Mat &image, float *&blob, std::vector<int64_
     }
 
     cv::split(floatImage, chw);
+}
+
+const std::vector<int> &AutoBackendOnnx::getImgsz()
+{
+    return imgsz_;
+}
+
+const int &AutoBackendOnnx::getHeight()
+{
+    return imgsz_[0];
+}
+
+const int &AutoBackendOnnx::getWidth()
+{
+    return imgsz_[1];
+}
+
+const int &AutoBackendOnnx::getStride()
+{
+    return stride_;
+}
+
+const int &AutoBackendOnnx::getCh()
+{
+    return ch_;
+}
+
+const int &AutoBackendOnnx::getNc()
+{
+    return nc_;
+}
+
+const std::unordered_map<int, std::string> &AutoBackendOnnx::getNames()
+{
+    return names_;
+}
+
+const cv::Size &AutoBackendOnnx::getCvSize()
+{
+    return cvSize_;
+}
+
+const std::vector<int64_t> &AutoBackendOnnx::getInputTensorShape()
+{
+    return inputTensorShape_;
+}
+
+const std::string &AutoBackendOnnx::getTask()
+{
+    return task_;
 }

@@ -15,6 +15,7 @@ public:
     OnnxModelBase(const char *modelPath, const char *logid, const char *provider);
     // OnnxModelBase();  // no default constructor should be there
     // virtual ~OnnxModelBase();
+
     virtual const std::vector<std::string> &getInputNames(); // = 0
     virtual const std::vector<std::string> &getOutputNames();
     virtual const std::vector<const char *> getOutputNamesCStr();
@@ -23,7 +24,7 @@ public:
     virtual const std::unordered_map<std::string, std::string> &getMetadata();
     virtual const char *getModelPath();
     virtual const Ort::Session &getSession();
-    // virtual std::vector<Ort::Value> forward(std::vector<Ort::Value> inputTensors);
+
     virtual std::vector<Ort::Value> forward(std::vector<Ort::Value> &inputTensors);
     Ort::Session session{nullptr};
 
