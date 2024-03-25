@@ -4,7 +4,7 @@
 #include <onnxruntime_cxx_api.h>
 #include <onnxruntime_c_api.h>
 
-#include "constants.h"
+#include "YoloUtils.h"
 
 /**
  * @brief Base class for any onnx model regarding the target.
