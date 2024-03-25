@@ -199,7 +199,7 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
     const bool &scaleFill = false;
     const bool &auto_ = false;
 
-    letterbox(image, preprocessed_img, new_shape, cv::Scalar(), auto_, scaleFill, true, getStride());
+    YoloUtils::letterbox(image, preprocessed_img, new_shape, cv::Scalar(), auto_, scaleFill, true, getStride());
     fill_blob(preprocessed_img, blob, inputTensorShape);
     int64_t inputTensorSize = YoloUtils::vector_product(inputTensorShape);
     std::vector<float> inputTensorValues(blob, blob + inputTensorSize);
@@ -352,7 +352,7 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat &masks_features,
 
     cv::Mat pre_out_mask = resized_mask(input_bbox);
     cv::Mat scaled_mask;
-    scaleImage(scaled_mask, resized_mask, img0_shape);
+    YoloUtils::scaleImage(scaled_mask, resized_mask, img0_shape);
     cv::resize(scaled_mask, mask_out, img0_shape);
 
     mask_out = mask_out(bound) > mask_thresh;
