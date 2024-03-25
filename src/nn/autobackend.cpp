@@ -1,7 +1,5 @@
 #include "nn/autobackend.h"
-#include "utils/augment.h"
 #include "YoloUtils.h"
-#include "utils/ops.h"
 #include <iostream>
 #include <ostream>
 
@@ -287,7 +285,7 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat &output0, cv::Mat &output1, Imag
             float out_top = MAX((pdata[1] - 0.5 * out_h + 0.5), 0);
 
             cv::Rect_<float> bbox = cv::Rect(out_left, out_top, (out_w + 0.5), (out_h + 0.5));
-            cv::Rect_<float> scaled_bbox = scale_boxes(getCvSize(), bbox, image_info.raw_size);
+            cv::Rect_<float> scaled_bbox = YoloUtils::scale_boxes(getCvSize(), bbox, image_info.raw_size);
 
             boxes.push_back(scaled_bbox);
         }
@@ -334,9 +332,9 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat &masks_features,
         static_cast<float>(bound.width),
         static_cast<float>(bound.height));
 
-    cv::Rect_<float> downsampled_bbox = scale_boxes(img0_shape, bound_float, downsampled_size);
+    cv::Rect_<float> downsampled_bbox = YoloUtils::scale_boxes(img0_shape, bound_float, downsampled_size);
     cv::Size bound_size = cv::Size(mw, mh);
-    clip_boxes(downsampled_bbox, bound_size);
+    YoloUtils::clip_boxes(downsampled_bbox, bound_size);
 
     cv::Mat matmul_res = (masks_features * proto).t();
     matmul_res = matmul_res.reshape(1, {downsampled_size.height, downsampled_size.width});
@@ -347,7 +345,7 @@ void AutoBackendOnnx::_get_mask2(const cv::Mat &masks_features,
     sigmoid_mask = 1.0 / (1.0 + sigmoid_mask);
 
     cv::Mat resized_mask;
-    cv::Rect_<float> input_bbox = scale_boxes(img0_shape, bound_float, img1_shape);
+    cv::Rect_<float> input_bbox = YoloUtils::scale_boxes(img0_shape, bound_float, img1_shape);
     cv::resize(sigmoid_mask, resized_mask, img1_shape, 0, 0, cv::INTER_LANCZOS4);
 
     cv::Mat pre_out_mask = resized_mask(input_bbox);

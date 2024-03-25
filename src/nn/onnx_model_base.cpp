@@ -5,7 +5,6 @@
 #include <onnxruntime_c_api.h>
 
 #include "constants.h"
-#include "utils/common.h"
 
 /**
  * @brief Base class for any onnx model regarding the target.

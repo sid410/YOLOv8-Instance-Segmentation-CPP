@@ -28,6 +28,14 @@ public:
     static void scaleImage(
         cv::Mat &scaled_mask, const cv::Mat &resized_mask, const cv::Size &im0_shape,
         const std::pair<float, cv::Point2f> &ratio_pad = std::make_pair(-1.0f, cv::Point2f(-1.0f, -1.0f)));
+
+    // ops
+    cv::Rect_<float> static scale_boxes(const cv::Size &img1_shape, cv::Rect_<float> &box, const cv::Size &img0_shape, std::pair<float, cv::Point2f> ratio_pad = std::make_pair(-1.0f, cv::Point2f(-1.0f, -1.0f)), bool padding = true);
+
+    static void clip_boxes(cv::Rect &box, const cv::Size &shape);
+    static void clip_boxes(cv::Rect_<float> &box, const cv::Size &shape);
+    static void clip_boxes(std::vector<cv::Rect> &boxes, const cv::Size &shape);
+    static void clip_boxes(std::vector<cv::Rect_<float>> &boxes, const cv::Size &shape);
 };
 
 #endif
