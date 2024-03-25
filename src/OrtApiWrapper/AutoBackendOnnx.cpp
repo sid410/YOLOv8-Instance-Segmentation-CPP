@@ -61,11 +61,11 @@ AutoBackendOnnx::AutoBackendOnnx(const char *modelPath, const char *logid, const
     {
         // parse it and convert to int iterable
         std::unordered_map<int, std::string> names = YoloUtils::parseNames(names_item->second);
-        std::cout << "***Names from metadata***" << std::endl;
-        for (const auto &pair : names)
-        {
-            std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-        }
+        // std::cout << "***Names from metadata***" << std::endl;
+        // for (const auto &pair : names)
+        // {
+        //     std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+        // }
         // set it here:
         if (names_.empty())
         {

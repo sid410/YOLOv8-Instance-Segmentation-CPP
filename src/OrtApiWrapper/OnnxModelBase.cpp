@@ -49,7 +49,7 @@ OnnxModelBase::OnnxModelBase(const char *modelPath, const char *logid, const cha
         throw std::runtime_error("NotImplemented provider=" + std::string(provider));
     }
 
-    std::cout << "Inference device: " << std::string(provider) << std::endl;
+    // std::cout << "Inference device: " << std::string(provider) << std::endl;
     session = Ort::Session(env, modelPath, sessionOptions);
 
     //  ----------------
