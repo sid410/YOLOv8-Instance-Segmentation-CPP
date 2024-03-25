@@ -8,8 +8,9 @@ find_package(OpenCV REQUIRED)
 # Create the executable
 add_executable(
   ${PROJECT_NAME}
-  src/main.cpp src/VehicleSegmentationMask.cpp src/OrtApiWrapper/YoloUtils.cpp
-  src/OrtApiWrapper/OnnxModelBase.cpp src/OrtApiWrapper/AutoBackendOnnx.cpp)
+  src/main.cpp src/VehicleSegmentationMask.cpp src/PersonSegmentationMask.cpp
+  src/OrtApiWrapper/YoloUtils.cpp src/OrtApiWrapper/OnnxModelBase.cpp
+  src/OrtApiWrapper/AutoBackendOnnx.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

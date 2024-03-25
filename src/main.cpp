@@ -1,4 +1,5 @@
 #include "VehicleSegmentationMask.h"
+#include "PersonSegmentationMask.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
@@ -14,12 +15,16 @@ int main()
         return 1;
     }
 
-    VehicleSegmentationMask segmentation(modelPath);
-    cv::Mat mask = segmentation.generateMask(img);
-    cv::Mat debugImg = segmentation.processResultsDebug(img, mask);
+    VehicleSegmentationMask vehicleSegmentation(modelPath);
+    cv::Mat vehicleMask = vehicleSegmentation.generateMask(img);
+    cv::Mat vehicleDebugImg = vehicleSegmentation.processResultsDebug(img, vehicleMask);
 
-    cv::imshow("Segmentation Mask", mask);
-    cv::imshow("Debug Image", debugImg);
+    PersonSegmentationMask personSegmentation(modelPath);
+    cv::Mat personMask = personSegmentation.generateMask(img);
+    cv::Mat personDebugImg = vehicleSegmentation.processResultsDebug(img, personMask);
+
+    cv::imshow("Segmentation Mask", personMask);
+    cv::imshow("Debug Image", personDebugImg);
 
     cv::waitKey(0);
     return 0;
