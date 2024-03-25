@@ -1,12 +1,13 @@
-#include "VehicleSegmentationMask.h"
-#include "PersonSegmentationMask.h"
-#include <iostream>
+#include "SegmentationMask.h"
+#include "VehicleDetectionStrategy.h"
+#include "PersonDetectionStrategy.h"
 #include <opencv2/opencv.hpp>
+#include <memory>
 
 int main()
 {
     std::string imgPath = "./images/cars.jpg";
-    const std::string modelPath = "./checkpoints/yolov8m-seg.onnx";
+    const std::string modelPath = "./checkpoints/yolov8n-seg.onnx";
 
     cv::Mat img = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
     if (img.empty())
@@ -15,16 +16,18 @@ int main()
         return 1;
     }
 
-    VehicleSegmentationMask vehicleSegmentation(modelPath);
-    cv::Mat vehicleMask = vehicleSegmentation.generateMask(img);
-    cv::Mat vehicleDebugImg = vehicleSegmentation.processResultsDebug(img, vehicleMask);
+    // Choose detection strategy based on the need (vehicle or person)
+    // std::unique_ptr<IDetectionStrategy> strategy = std::make_unique<VehicleDetectionStrategy>();
+    std::unique_ptr<IDetectionStrategy> strategy = std::make_unique<PersonDetectionStrategy>();
 
-    PersonSegmentationMask personSegmentation(modelPath);
-    cv::Mat personMask = personSegmentation.generateMask(img);
-    cv::Mat personDebugImg = vehicleSegmentation.processResultsDebug(img, personMask);
+    SegmentationMask segmentation(modelPath, std::move(strategy));
+    cv::Mat mask = segmentation.generateMask(img);
+    cv::Mat highlightedImg = segmentation.processResultsDebug(img, mask);
 
-    cv::imshow("Segmentation Mask", personMask);
-    cv::imshow("Debug Image", personDebugImg);
+    // Display results
+    cv::imshow("Mask", mask);
+    cv::imshow("Highlighted Image", highlightedImg);
+    cv::waitKey(0);
 
     cv::waitKey(0);
     return 0;
