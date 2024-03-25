@@ -40,9 +40,9 @@ std::vector<cv::Scalar> generateRandomColors(int class_names_num, int numChannel
     return colors;
 }
 
-void plot_results(cv::Mat img, std::vector<YoloResults> &results,
-                  std::vector<cv::Scalar> color, std::unordered_map<int, std::string> &names,
-                  const cv::Size &shape)
+void plotResults(cv::Mat img, std::vector<YoloResults> &results,
+                 std::vector<cv::Scalar> color, std::unordered_map<int, std::string> &names,
+                 const cv::Size &shape)
 {
     cv::Mat mask = img.clone();
 
@@ -127,7 +127,7 @@ int main()
 
     cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::Size show_shape = img.size();
-    plot_results(img, objs, colors, names, show_shape);
+    plotResults(img, objs, colors, names, show_shape);
     cv::imshow("img", img);
     cv::waitKey();
     return -1;
