@@ -1,6 +1,6 @@
 #include "nn/autobackend.h"
 #include "utils/augment.h"
-#include "utils/common.h"
+#include "YoloUtils.h"
 #include "utils/ops.h"
 #include <iostream>
 #include <ostream>
@@ -29,7 +29,7 @@ AutoBackendOnnx::AutoBackendOnnx(const char *modelPath, const char *logid, const
     if (imgsz_iterator != base_metadata.end())
     {
         // parse it and convert to int iterable
-        std::vector<int> imgsz = convertStringVectorToInts(parseVectorString(imgsz_iterator->second));
+        std::vector<int> imgsz = YoloUtils::convertStringVectorToInts(YoloUtils::parseVectorString(imgsz_iterator->second));
         // set it here:
         if (imgsz_.empty())
         {
@@ -63,7 +63,7 @@ AutoBackendOnnx::AutoBackendOnnx(const char *modelPath, const char *logid, const
     if (names_item != base_metadata.end())
     {
         // parse it and convert to int iterable
-        std::unordered_map<int, std::string> names = parseNames(names_item->second);
+        std::unordered_map<int, std::string> names = YoloUtils::parseNames(names_item->second);
         std::cout << "***Names from metadata***" << std::endl;
         for (const auto &pair : names)
         {
@@ -201,7 +201,7 @@ std::vector<YoloResults> AutoBackendOnnx::predict_once(cv::Mat &image, float &co
 
     letterbox(image, preprocessed_img, new_shape, cv::Scalar(), auto_, scaleFill, true, getStride());
     fill_blob(preprocessed_img, blob, inputTensorShape);
-    int64_t inputTensorSize = vector_product(inputTensorShape);
+    int64_t inputTensorSize = YoloUtils::vector_product(inputTensorShape);
     std::vector<float> inputTensorValues(blob, blob + inputTensorSize);
 
     Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(

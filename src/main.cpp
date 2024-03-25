@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "nn/onnx_model_base.h"
 #include "nn/autobackend.h"
+#include "YoloUtils.h"
 #include <opencv2/opencv.hpp>
 #include <vector>
 
