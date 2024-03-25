@@ -65,11 +65,3 @@ cv::Mat PersonSegmentationMask::processResultsDebug(const cv::Mat &img, const cv
 
     return highlightedImg;
 }
-
-int PersonSegmentationMask::countPeople(const cv::Mat &mask)
-{
-    // Assuming mask is binary, this method could count distinct people if necessary.
-    // For now, it just returns the size of filteredResults from generateMask.
-    // This placeholder is to illustrate where such functionality could be implemented.
-    return 0; // Placeholder
-}

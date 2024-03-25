@@ -14,7 +14,6 @@ public:
     PersonSegmentationMask(const std::string &modelPath);
     cv::Mat generateMask(const cv::Mat &img);
     cv::Mat processResultsDebug(const cv::Mat &img, const cv::Mat &mask);
-    int countPeople(const cv::Mat &mask);
 
 private:
     std::unique_ptr<AutoBackendOnnx> model;

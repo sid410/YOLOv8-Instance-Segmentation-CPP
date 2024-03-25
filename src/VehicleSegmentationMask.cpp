@@ -1,4 +1,3 @@
-// VehicleSegmentationMask.cpp
 #include "VehicleSegmentationMask.h"
 #include <iostream>
 #include <algorithm>
