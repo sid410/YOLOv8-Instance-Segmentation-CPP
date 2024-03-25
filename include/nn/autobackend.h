@@ -5,7 +5,6 @@
 #include <vector>
 #include <unordered_map>
 #include <opencv2/opencv.hpp>
-
 #include "onnx_model_base.h"
 #include "YoloUtils.h"
 

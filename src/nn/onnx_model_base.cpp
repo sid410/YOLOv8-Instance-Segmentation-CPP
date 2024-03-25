@@ -1,9 +1,5 @@
 #include "nn/onnx_model_base.h"
-
 #include <iostream>
-#include <onnxruntime_cxx_api.h>
-#include <onnxruntime_c_api.h>
-
 #include "YoloUtils.h"
 
 /**
