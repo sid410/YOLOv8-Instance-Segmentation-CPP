@@ -1,4 +1,4 @@
-#include "nn/onnx_model_base.h"
+#include "OnnxModelBase.h"
 #include <iostream>
 #include "YoloUtils.h"
 

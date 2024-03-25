@@ -5,14 +5,11 @@ set(ONNXRUNTIME_DIR ${CMAKE_SOURCE_DIR}/onnxruntime) # onnxruntime root
 
 find_package(OpenCV REQUIRED)
 
-# --- Configure your project files ---
-include_directories(include) # Include your header files directory
-
-# Recursively collect all source files under 'src' directory
-file(GLOB_RECURSE CURR_SOURCES src/*.cpp)
-
 # Create the executable
-add_executable(${PROJECT_NAME} ${CURR_SOURCES})
+add_executable(
+  ${PROJECT_NAME}
+  src/main.cpp src/OrtApiWrapper/YoloUtils.cpp
+  src/OrtApiWrapper/OnnxModelBase.cpp src/OrtApiWrapper/AutoBackendOnnx.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
