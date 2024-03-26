@@ -6,7 +6,7 @@
 
 int main()
 {
-    std::string imgPath = "./images/cars.jpg";
+    std::string imgPath = "./images/team.jpg";
     const std::string modelPath = "./checkpoints/yolov8n-seg.onnx";
 
     cv::Mat img = cv::imread(imgPath, cv::IMREAD_UNCHANGED);
@@ -29,6 +29,5 @@ int main()
     cv::imshow("Highlighted Image", highlightedImg);
     cv::waitKey(0);
 
-    cv::waitKey(0);
     return 0;
 }
